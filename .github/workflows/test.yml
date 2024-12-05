@@ -1,0 +1,43 @@
+name: Rust
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: pdfium
+        name: Get pdfium-binaries latest
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: bblanchon
+          repo: pdfium-binaries
+
+      - name: Download release
+        run: |
+          wget https://github.com/bblanchon/pdfium-binaries/releases/download/${{ steps.pdfium.outputs.release }}/pdfium-linux-x64.tgz
+          tar -zxvf pdfium-linux-x64.tgz
+
+      - name: hash
+        run: |
+          md5sum ec06d154fb3ec32eaea65cd1d1fe5618.pdf
+
+      - name: run
+        run: |
+          cargo run
+
+      - name: Upload jpg
+        uses: actions/upload-artifact@v4.4.3
+        with:
+          name: test.jpg
+          path: ./test.jpg
